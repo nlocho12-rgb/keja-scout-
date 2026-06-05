@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="sw-KE">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KejaScout - Secure Student Housing</title>
+    <style>
+        :root {
+            --primary: #0A1F44;
+            --verified: #00A86B;
+            --warning: #F5A623;
+            --background: #F8F9FA;
+            --card: #FFFFFF;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(10,31,68,0.1); padding-bottom: 15px; margin-bottom: 20px;}
+        .logo-text { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .logo-span { color: var(--verified); }
+        .scout-box { background: var(--card); border-left: 6px solid var(--primary); padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        textarea { width: 100%; border: 1px solid #CCC; border-radius: 6px; padding: 12px; font-size: 14px; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 700; margin-top: 10px; display: inline-block; }
+        .btn-mpesa { background: var(--verified); }
+        .btn-report { background: transparent; color: var(--warning); border: 1px solid var(--warning); padding: 6px 12px; font-size: 12px; }
+        .ai-result-panel { background: rgba(0, 168, 107, 0.05); border: 1px solid var(--verified); padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card-item { background: var(--card); border: 1px solid rgba(10,31,68,0.08); padding: 16px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); position: relative; }
+        .chip { display: inline-block; background: rgba(10,31,68,0.06); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-right: 5px; }
+        .badge-verified { background: rgba(0,168,107,0.1); color: var(--verified); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        .cost-row { background: rgba(10,31,68,0.02); padding: 10px; border-radius: 6px; font-size: 13px; margin: 10px 0; border-left: 3px solid var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-text">Keja<span class="logo-span">Scout</span></div>
+            <div><span class="badge-verified">VERIFIED BY NATIONAL ID</span></div>
+        </header>
+
+        <div class="scout-box">
+            <h3>Consult the KejaScout AI Assistant</h3>
+            <form action="/scout-query" method="post">
+                <textarea name="query" rows="2" placeholder="Tell the scout what campus you attend and your ideal budget..."></textarea>
+                <button type="submit" class="btn">Run AI Analysis</button>
+            </form>
+
+            {% if ai_response %}
+            <div class="ai-result-panel">
+                <h4>Scout Brain Assessment for: "{{ query_text }}"</h4>
+                <p><strong>Detected Uni Boundary:</strong> {{ ai_response.target_university }} | <strong>Max Cap extracted:</strong> KSh {{ ai_response.max_budget_detected }}</p>
+                <p><strong>Scout Guidance:</strong> {{ ai_response.personalized_advice }}</p>
+                <p style="color: var(--warning); font-size: 13px; font-weight: bold;"><strong>Neighborhood Safety Analytics:</strong> {{ ai_response.neighborhood_safety_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <h2>Live Available Accommodations</h2>
+        <div class="grid">
+            {% for item in listings %}
+            <div class="card-item">
+                {% if item.is_verified %}
+                <span class="badge-verified">VERIFIED BY NATIONAL ID</span>
+                {% endif %}
+                <h3 style="margin: 5px 0;">{{ item.type }}</h3>
+                <p style="font-size: 13px; margin: 5px 0; color: #555;">Target: <strong>{{ item.nearest_university }}</strong></p>
+                
+                <div>
+                    <span class="chip">Location: {{ item.nearest_landmark }}</span>
+                    <span class="chip">Policy: {{ item.gender_policy }}</span>
+                </div>
+
+                <div class="cost-row">
+                    <strong>Upfront Total Move-In Cost Breakdown:</strong><br>
+                    Rent: KSh {{ "{:,}".format(item.price) }} | Deposit: KSh {{ "{:,}".format(item.deposit) }}<br>
+                    <span style="color: var(--verified); font-weight: bold;">Total Due Now: KSh {{ "{:,}".format(item.price + item.deposit) }}</span>
+                </div>
+
+                <p style="font-size: 11px; color:#777;">System Status Flags: [{{ item.scam_flags }} reports]</p>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-mpesa" onclick="alert('M-Pesa Express STK Push Sent! Lock window active for 2 Hours.')">Book 10% Via M-Pesa</button>
+                    <button class="btn-report" onclick="alert('Report filed. 3 reports triggers an automated listing suspension.')">Report</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
